@@ -7,32 +7,10 @@
 #include <glm/glm.hpp>
 #include <iostream>
 
+#include "../core/cnh/Shader.h"
+
 const int SCREEN_WIDTH = 1080;
 const int SCREEN_HEIGHT = 720;
-
-const char* vertexShaderSource = R"(
-#version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec4 aColor;
-  
-out vec4 ourColor;
-
-void main()
-{
-    gl_Position = vec4(aPos, 1.0);
-    ourColor = aColor;
-})";
-
-const char* fragmentShaderSource = R"(
-#version 330 core
-out vec4 FragColor;
-  
-in vec4 ourColor;
-
-void main()
-{
-    FragColor = ourColor;
-})";
 
 int main() {
 	printf("Initializing...");
@@ -52,50 +30,7 @@ int main() {
 	}
 	//Initialization goes here!
 
-	int success;
-	char infoLog[512];
-
-	//vertex shader
-	unsigned int vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR SHADER VERTEX COMPILATION\n" << infoLog << std::endl;
-	}
-
-	//fragment shader	
-	unsigned int fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cout << "ERROR SHADER FRAGMENT COMPILATION\n" << infoLog << std::endl;
-	}
-
-	//shader program
-	unsigned int shaderProgram;
-	shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cout << "ERROR SHADER PROGRAM LINKING\n" << infoLog << std::endl;
-	}
-
-	//free shader memory?
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+	cnh::Shader ourShader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 
 	float vertices[] = {
       //X	   Y     Z	   R     G     B     A
@@ -134,13 +69,14 @@ int main() {
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		//Drawing happens here!
-		glUseProgram(shaderProgram);
+		ourShader.use();
 
-		//color over time
+		/*color over time
 		float time = glfwGetTime();
 		float greenValue = (sin(time) / 2.0f) + 0.5f;
 		int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
 		glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+		*/
 
 		glBindVertexArray(VAO);
 
