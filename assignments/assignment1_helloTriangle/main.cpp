@@ -9,8 +9,8 @@
 
 #include "../core/cnh/Shader.h"
 
-const int SCREEN_WIDTH = 1080;
-const int SCREEN_HEIGHT = 720;
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 800;
 
 int main() {
 	printf("Initializing...");
@@ -33,10 +33,11 @@ int main() {
 	cnh::Shader ourShader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 
 	float vertices[] = {
-      //X	   Y     Z	   R     G     B     A
-	   -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-		0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f
+		//for context ive changed intial xy positions to the radians that the point sits at on a circle for easier roatation
+      //radians x2    Z	    R     G     B     A
+	    3.66f, 3.66f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		5.76f, 5.76f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+		1.57f, 1.57f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f
 	};
 
 	//vertex buffer object - 0
@@ -61,6 +62,7 @@ int main() {
 
 	
 
+	float angles[] = {  210.0f, 330.0f, 90.0f };
 	
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -71,12 +73,11 @@ int main() {
 		//Drawing happens here!
 		ourShader.use();
 
-		/*color over time
+		//color fade and time input for rotation
 		float time = glfwGetTime();
-		float greenValue = (sin(time) / 2.0f) + 0.5f;
-		int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-		glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
-		*/
+		float multiplier = (sin(time) / 2.0f) + 0.6f;
+		ourShader.setFloat("colorMultiplier", multiplier);
+		ourShader.setFloat("uTime", time);
 
 		glBindVertexArray(VAO);
 
