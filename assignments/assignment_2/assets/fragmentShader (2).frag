@@ -9,7 +9,5 @@ uniform float time;
 
 void main()
 {
-    vec2 aTexCoord = texCoord;
-    aTexCoord.x += time;
     FragColor = texture(texture2, texCoord);
 }
