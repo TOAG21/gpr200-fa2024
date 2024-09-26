@@ -33,18 +33,31 @@ int main() {
 	cnh::Shader ourShader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 
 	float vertices[] = {
-		//for context ive changed intial xy positions to the radians that the point sits at on a circle for easier roatation
-      //radians x2    Z	    R     G     B     A
-	    3.66f, 3.66f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		5.76f, 5.76f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-		1.57f, 1.57f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f
+		//X      Y      Z	    R     G     B     A
+		  0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+		 -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+		 -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f
 	};
+	unsigned int indices[] =
+	{
+		0, 1, 3,
+		1, 2, 3
+	};
+
+	//element buffer
+	unsigned int EBO;
+	glGenBuffers(1, &EBO);
 
 	//vertex buffer object - 0
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 
 	unsigned int VAO;
@@ -81,7 +94,8 @@ int main() {
 
 		glBindVertexArray(VAO);
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(window);
 	}
