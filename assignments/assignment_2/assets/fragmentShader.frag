@@ -11,5 +11,6 @@ void main()
 {
     vec2 aTexCoord = texCoord;
     aTexCoord.x += time / 10.0f;
+    //aTexCoord.y += sin(aTexCoord.x * 10 + time) / 15;
     FragColor = texture(texture1, aTexCoord);
 }

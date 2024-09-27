@@ -35,12 +35,19 @@ int main() {
 	cnh::Shader logoShader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	cnh::Shader artShader("assets/vertexShader.vert", "assets/fragmentShader (2).frag");
 
-	float vertices[] = {
+	float fgVertices[] = {
 		//X      Y      Z	    R     G     B   U     V
 		  0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
 		  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
 		 -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
 		 -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 1.0f,  0.0f, 1.0f
+	};
+	float bgVertices[] = {
+		//X      Y      Z	    R     G     B   U     V
+		  1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
+		  1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
+		 -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
+		 -1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  0.0f, 1.0f
 	};
 	unsigned int indices[] =
 	{
@@ -49,21 +56,38 @@ int main() {
 	};
 	
 	//element buffer
-	unsigned int EBO, VBO, VAO;
+	unsigned int EBO, VBOfg, VBObg, VAO;
 	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &VBOfg);
+	glGenBuffers(1, &VBObg);
 	glGenBuffers(1, &EBO);
 
+	logoShader.use();
 	glBindVertexArray(VAO);
-
-	//vertex buffer object - 0
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
+	glBindBuffer(GL_ARRAY_BUFFER, VBOfg);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(fgVertices), fgVertices, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
+	//link vertex attributes
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	//vector color
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(sizeof(float) * 3));
+	glEnableVertexAttribArray(1);
+	//uv coords
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(sizeof(float) * 6));
+	glEnableVertexAttribArray(2);
+
+
+	artShader.use();
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBObg);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(bgVertices), bgVertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	//link vertex attributes
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
@@ -84,8 +108,6 @@ int main() {
 	cnh::Texture texture1 = cnh::Texture("assets/scpLogo.png", GL_NEAREST_MIPMAP_NEAREST, GL_REPEAT, 4);
 	stbi_set_flip_vertically_on_load(true);
 	cnh::Texture texture2 = cnh::Texture("assets/scp999.png", GL_NEAREST_MIPMAP_NEAREST, GL_CLAMP_TO_EDGE, 4);
-
-	artShader.use();
 	
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -99,12 +121,16 @@ int main() {
 
 		//Drawing happens here!
 		glBindVertexArray(VAO);
+
+
 		artShader.use();
 		artShader.setInt("texture1", 0);
 		artShader.setInt("texture2", 1);
 		texture1.Bind(0);
 		texture2.Bind(1);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+
 		logoShader.use();
 		logoShader.setInt("texture1", 0);
 		logoShader.setInt("texture2", 1);
