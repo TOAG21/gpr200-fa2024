@@ -17,6 +17,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 
 void processInput(GLFWwindow* window);
+void Fcallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
@@ -36,6 +37,8 @@ float fov = 60.0f;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+bool perspectiveProjection = true;
 
 int main() {
 	printf("Initializing...");
@@ -59,6 +62,7 @@ int main() {
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetKeyCallback(window, Fcallback);
 	glfwSetScrollCallback(window, scroll_callback);
 	glEnable(GL_DEPTH_TEST);
 
@@ -111,17 +115,73 @@ int main() {
 			1, 2, 3  // second triangle
 	};
 	glm::vec3 cubePositions[] = {
-	glm::vec3(0.0f,  0.0f,  0.0f),
-	glm::vec3(2.0f,  5.0f, -15.0f),
-	glm::vec3(-1.5f, -2.2f, -2.5f),
-	glm::vec3(-3.8f, -2.0f, -12.3f),
-	glm::vec3(2.4f, -0.4f, -3.5f),
-	glm::vec3(-1.7f,  3.0f, -7.5f),
-	glm::vec3(1.3f, -2.0f, -2.5f),
-	glm::vec3(1.5f,  2.0f, -2.5f),
-	glm::vec3(1.5f,  0.2f, -1.5f),
-	glm::vec3(-1.3f,  1.0f, -1.5f)
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f)),
+	glm::vec3(ew::RandomRange(-8.0f, 8.0f),  ew::RandomRange(-8.0f, 8.0f), ew::RandomRange(-8.0f, 8.0f))
 	};
+	glm::vec3 cubeRotations[] = {
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)),
+		glm::vec3(ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f), ew::RandomRange(0.0f, 1.2f)) //one extra vector so that they dont rotate the same direction they start in
+	};
+	float cubeScales[] = {
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f),
+		ew::RandomRange(0.25f, 3.0f)
+	};
+	float rotationAngle = 20.0f;
 
 	unsigned int VBO, VAO, EBO;
 	glGenVertexArrays(1, &VAO);
@@ -173,7 +233,16 @@ int main() {
 			cameraUp);
 
 		glm::mat4 projection = glm::mat4(1.0f);
-		projection = glm::perspective(glm::radians(fov), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 1000.0f);
+		if (perspectiveProjection)
+			projection = glm::perspective(glm::radians(fov), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 1000.0f);
+		else 
+		{
+			int orthoSize = 50;
+			projection = glm::ortho(
+				(float)-(SCREEN_WIDTH / orthoSize), (float)(SCREEN_WIDTH / orthoSize),
+				(float)-(SCREEN_HEIGHT / orthoSize), (float)(SCREEN_HEIGHT / orthoSize),
+				-5.0f, 500.0f);
+		}
 		// retrieve the matrix uniform locations
 		unsigned int modelLoc = glGetUniformLocation(ourShader.ID, "model");
 		unsigned int viewLoc = glGetUniformLocation(ourShader.ID, "view");
@@ -184,12 +253,16 @@ int main() {
 		glBindVertexArray(VAO);
 
 		//make and rotate cubes
-		for (unsigned int i = 0; i < 10; i++)
+		for (unsigned int i = 0; i < 20; i++)
 		{
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, cubePositions[i]);
-			float angle = 20.0f * i + 10.0f;
-			model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			model = glm::rotate(model, glm::radians(130.0f), cubeRotations[i]);
+			model = glm::scale(model, glm::vec3(cubeScales[i]));
+
+			rotationAngle += 2 * deltaTime;
+			model = glm::rotate(model, glm::radians(rotationAngle),
+				cubeRotations[i+1]);
 			ourShader.setMat4("model", model);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -225,7 +298,13 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 		cameraPos -= cameraSpeed * cameraUp;
 }
-
+void Fcallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_F && action == GLFW_PRESS)
+	{
+		perspectiveProjection = !perspectiveProjection;
+	}
+}
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) 
 {
