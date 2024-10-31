@@ -10,6 +10,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+//Inlcude IMGUI
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 #include <iostream>
 
 #include "../core/cnh/Shader.h"
@@ -56,10 +61,16 @@ int main() {
 		printf("GLAD Failed to load GL headers");
 		return 1;
 	}
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init();
+
 	//Initialization goes here!
 
 	cnh::Shader litShader("assets/vertexShader.vert", "assets/fragmentShader.frag");
-	cnh::Shader lightCubeShader("assets/vertexShader.vert", "assets/fragmentShader.frag");
+	cnh::Shader lightCubeShader("assets/lightVShader.vert", "assets/lightFShader.frag");
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouse_callback);
@@ -185,6 +196,7 @@ int main() {
 	float rotationAngle = 20.0f;
 
 	glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+	glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
 
 	unsigned int VBO, VAO, EBO;
 	glGenVertexArrays(1, &VAO);
@@ -209,6 +221,15 @@ int main() {
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
+	unsigned int lightCubeVAO;
+	glGenVertexArrays(1, &lightCubeVAO);
+	glBindVertexArray(lightCubeVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	// note that we update the lamp's position attribute's stride to reflect the updated buffer data
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
 	//texture loading
 	stbi_set_flip_vertically_on_load(true);
 	cnh::Texture texture1 = cnh::Texture("assets/cube.png", GL_NEAREST_MIPMAP_NEAREST, GL_REPEAT, 4);
@@ -232,12 +253,12 @@ int main() {
 		//Drawing happens here!
 		litShader.use();
 		texture1.Bind(0);
+
 		glm::mat4 view;
 		view = glm::lookAt(
 			cameraPos,
 			cameraPos + cameraFront,
 			cameraUp);
-
 		glm::mat4 projection = glm::mat4(1.0f);
 		if (perspectiveProjection)
 			projection = glm::perspective(glm::radians(fov), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 1000.0f);
@@ -249,13 +270,12 @@ int main() {
 				(float)-(SCREEN_HEIGHT / orthoSize), (float)(SCREEN_HEIGHT / orthoSize),
 				-5.0f, 500.0f);
 		}
-		// retrieve the matrix uniform locations
-		unsigned int modelLoc = glGetUniformLocation(litShader.ID, "model");
-		unsigned int viewLoc = glGetUniformLocation(litShader.ID, "view");
 		// pass them to the shaders
 		litShader.setMat4("view", view);
 		litShader.setMat4("projection", projection);
 
+		litShader.setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.5f));
+		litShader.setVec3("lightColor", lightColor);
 		litShader.setVec3("lightPos", lightPos);
 		litShader.setVec3("viewPos", cameraPos);
 
@@ -270,12 +290,36 @@ int main() {
 			model = glm::scale(model, glm::vec3(cubeScales[i]));
 
 			rotationAngle += 2 * deltaTime;
-			model = glm::rotate(model, glm::radians(rotationAngle),
-				cubeRotations[i+1]);
+			model = glm::rotate(model, glm::radians(rotationAngle),cubeRotations[i+1]);
 			litShader.setMat4("model", model);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
+
+		//lightcube draw
+		lightCubeShader.use();
+		lightCubeShader.setMat4("projection", projection);
+		lightCubeShader.setMat4("view", view);
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, lightPos);
+		model = glm::scale(model, glm::vec3(0.2f));
+		lightCubeShader.setMat4("model", model);
+
+		glBindVertexArray(lightCubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//imgui draw
+		ImGui_ImplGlfw_NewFrame();
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui::NewFrame();
+
+		ImGui::Begin("Settings");
+		ImGui::Text("mmm yes lightcube");
+		ImGui::End();
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 
 		glfwSwapBuffers(window);
 	}
@@ -322,6 +366,17 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 		lastX = xpos;
 		lastY = ypos;
 		firstMouse = false;
+	}
+
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_RELEASE)
+	{
+		firstMouse = true;
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		return;
+	}
+	else 
+	{
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
 
 	float xoffset = xpos - lastX;

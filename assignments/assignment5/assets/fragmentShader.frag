@@ -13,12 +13,12 @@ uniform vec3 objectColor;
 
 void main()
 {
-    float ambientStrength = 0.01;
+    float ambientStrength = 0.1;
     vec3 ambient = ambientStrength * lightColor;
 
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(lightPos - FragPos);
-    float diff = max(dot(norm, lightColor),0.0);
+    float diff = max(dot(norm, lightDir),0.0);
     vec3 diffuse = diff * lightColor;
 
     float specularStrength = 0.5;
@@ -30,6 +30,7 @@ void main()
     vec2 aTexCoord = texCoord;
 
     vec4 lighting = vec4((ambient + diffuse + specular), 1.0);
-    vec4 result = lighting * texture(texture1, aTexCoord);
+    //vec4 result = lighting * texture(texture1, aTexCoord);
+    vec4 result = vec4((ambient + diffuse + specular) * objectColor, 1.0f);
     FragColor = result;
 }
