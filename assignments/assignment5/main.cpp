@@ -197,6 +197,11 @@ int main() {
 
 	glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 	glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
+	float ambientStrength = 0.2f;
+	float specularStrength = 0.8f;
+	float diffuseStrength = 1.0f;
+	float shineStrength = 32.0f;
+	float rotationSpeed = 0.5f;
 
 	unsigned int VBO, VAO, EBO;
 	glGenVertexArrays(1, &VAO);
@@ -248,7 +253,7 @@ int main() {
 		glfwPollEvents();
 		processInput(window);
 		//Clear framebuffer
-		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//Drawing happens here!
 		litShader.use();
@@ -275,6 +280,10 @@ int main() {
 		litShader.setMat4("projection", projection);
 
 		litShader.setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.5f));
+		litShader.setFloat("ambientStrength", ambientStrength);
+		litShader.setFloat("specularStrength", specularStrength);
+		litShader.setFloat("diffuseStrength", diffuseStrength);
+		litShader.setFloat("shininess", shineStrength);
 		litShader.setVec3("lightColor", lightColor);
 		litShader.setVec3("lightPos", lightPos);
 		litShader.setVec3("viewPos", cameraPos);
@@ -289,7 +298,7 @@ int main() {
 			model = glm::rotate(model, glm::radians(130.0f), cubeRotations[i]);
 			model = glm::scale(model, glm::vec3(cubeScales[i]));
 
-			rotationAngle += 2 * deltaTime;
+			rotationAngle += rotationSpeed * deltaTime;
 			model = glm::rotate(model, glm::radians(rotationAngle),cubeRotations[i+1]);
 			litShader.setMat4("model", model);
 
@@ -314,7 +323,13 @@ int main() {
 		ImGui::NewFrame();
 
 		ImGui::Begin("Settings");
-		ImGui::Text("mmm yes lightcube");
+		ImGui::DragFloat3("Light Position", &lightPos.x, 0.1f);
+		ImGui::ColorEdit3("LightColor", &lightColor.r);
+		ImGui::SliderFloat("Ambient Strength", &ambientStrength, 0.0f, 1.0f);
+		ImGui::SliderFloat("Specular Strength", &specularStrength, 0.0f, 1.0f);
+		ImGui::SliderFloat("Diffuse Strength", &diffuseStrength, 0.0f, 1.0f);
+		ImGui::SliderFloat("Shininess", &shineStrength, 2.0f, 1024.0f);
+		ImGui::SliderFloat("Rotation", &rotationSpeed, 0.0f, 20.0f);
 		ImGui::End();
 
 		ImGui::Render();
