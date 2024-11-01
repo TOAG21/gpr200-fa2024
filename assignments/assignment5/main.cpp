@@ -62,11 +62,6 @@ int main() {
 		return 1;
 	}
 
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	ImGui_ImplOpenGL3_Init();
-
 	//Initialization goes here!
 
 	cnh::Shader litShader("assets/vertexShader.vert", "assets/fragmentShader.frag");
@@ -76,7 +71,14 @@ int main() {
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetKeyCallback(window, Fcallback);
 	glfwSetScrollCallback(window, scroll_callback);
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init();
+
 	glEnable(GL_DEPTH_TEST);
+
 
 	float vertices[] = {
 //   X      Y     Z       U     V      Normal vector------
@@ -235,12 +237,18 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
+
+	litShader.use();
 	//texture loading
 	stbi_set_flip_vertically_on_load(true);
 	cnh::Texture texture1 = cnh::Texture("assets/cube.png", GL_NEAREST_MIPMAP_NEAREST, GL_REPEAT, 4);
 
-	litShader.use();
 	litShader.setInt("texture1", 0);
+
+	stbi_set_flip_vertically_on_load(true);
+	cnh::Texture texture2 = cnh::Texture("assets/cubeNormal.png", GL_NEAREST_MIPMAP_NEAREST, GL_REPEAT, 4);
+
+	litShader.setInt("texture2", 1);
 
 	// glm look at - position, target, then up
 	
@@ -258,6 +266,7 @@ int main() {
 		//Drawing happens here!
 		litShader.use();
 		texture1.Bind(0);
+		texture2.Bind(1);
 
 		glm::mat4 view;
 		view = glm::lookAt(

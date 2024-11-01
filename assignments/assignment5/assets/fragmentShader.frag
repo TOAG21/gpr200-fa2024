@@ -6,6 +6,7 @@ in vec2 texCoord;
 in vec3 Normal;  
 in vec3 FragPos; 
 uniform sampler2D texture1;
+uniform sampler2D texture2;
 uniform float ambientStrength; 
 uniform vec3 lightPos; 
 uniform vec3 viewPos; 
@@ -21,9 +22,10 @@ void main()
 
     vec2 aTexCoord = texCoord;
     vec4 tex = texture(texture1, aTexCoord);
+    vec4 tex2 = texture(texture2, aTexCoord);
 
-    //vec3 norm = normalize(Normal + (tex.xyz * 5 * Normal));
-    vec3 norm = normalize(Normal);
+    vec3 norm = normalize(Normal + (tex2.rgb * -10 * Normal));
+    //vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(lightPos - FragPos);
     float diff = max(dot(norm, lightDir),0.0);
     vec3 diffuse = diffuseStrength * diff * lightColor;
